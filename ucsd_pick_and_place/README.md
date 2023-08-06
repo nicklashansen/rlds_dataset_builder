@@ -54,7 +54,6 @@ Each episode includes additional metadata, including:
 
 - `file_path`: Path to the original data file.
 - `n_transitions`: Number of transitions in the episode.
-- `n_observations`: Number of observations in the episode Note: `n_observations = n_transitions + 1`, since the last observation is not followed by an action.
 - `success`: True if the last state of an episode is a success state, False otherwise.
 - `success_labeled_by`: Who labeled success (and thereby reward) of the episode. Can be one of: `[human, classifier]`. Most, but not all, episodes labeled by the classifier have also been manually checked for correctness by a human; see `disclaimer` below.
 - `disclaimer`: Disclaimer about the particular episode. The majority of episodes have reliable reward labels. However, a fraction of the dataset has noisy reward labels, and such data points are marked with a disclaimer. Additionally, the dataset contains no successful trajectories for the green object in the tabletop environment; these trajectories are also marked with a disclaimer to indicate this.

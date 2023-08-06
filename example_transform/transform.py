@@ -63,12 +63,13 @@ def transform_step(step: Dict[str, Any]) -> Dict[str, Any]:
        Input is dict of numpy arrays."""
     img = Image.fromarray(step['observation']['image']).resize(
         (128, 128), Image.Resampling.LANCZOS)
+    action = np.concatenate([step['action'][:3], np.zeros(3),
+        np.array([step['action'][3], 0.])], dtype=np.float32)
     transformed_step = {
         'observation': {
             'image': np.array(img),
         },
-        'action': np.concatenate(
-            [step['action'][:3], step['action'][5:8], step['action'][-2:]]),
+        'action': action,
     }
 
     # copy over all other fields unchanged
@@ -77,4 +78,3 @@ def transform_step(step: Dict[str, Any]) -> Dict[str, Any]:
         transformed_step[copy_key] = step[copy_key]
 
     return transformed_step
-

@@ -85,13 +85,6 @@ class UCSDPickAndPlace(tfds.core.GeneratorBasedBuilder):
                         dtype=np.int32,
                         doc='Number of transitions in the episode.'
                     ),
-                    'n_observations': tfds.features.Scalar(
-                        dtype=np.int32,
-                        doc='Number of observations in the episode. '
-                            'Note: n_observations = n_transitions + 1, '
-                            'since the last observation is not followed '
-                            'by an action.'
-                    ),
                     'success': tfds.features.Scalar(
                         dtype=np.bool_,
                         doc='True if the last state of an episode is '
@@ -120,7 +113,7 @@ class UCSDPickAndPlace(tfds.core.GeneratorBasedBuilder):
             # load raw data
             data = np.load(episode_path, allow_pickle=True)
             # note: there is 1 more observation than action/reward
-            ep_len = len(data['observation'])
+            ep_len = len(data['action'])
 
             # special instruction + reward handling for the green object
             green_object_idxs = [549, 550, 558, 559, 560, 561, 562]
@@ -167,13 +160,6 @@ class UCSDPickAndPlace(tfds.core.GeneratorBasedBuilder):
                     obs = np.asanyarray(im.convert("RGB"))
                 return obs
 
-            def or_nan(array, idx):
-                """Return NaN array if index is out of bounds."""
-                if idx < len(array):
-                    return array[idx]
-                else:
-                    return np.full_like(array[0], np.nan)
-
             episode = []
             for i in range(ep_len):
                 episode.append({
@@ -181,9 +167,9 @@ class UCSDPickAndPlace(tfds.core.GeneratorBasedBuilder):
                         'image': get_image(episode_path, i),
                         'state': data['state'][i,:7]/100.,
                     },
-                    'action': or_nan(data['action'], i),
+                    'action': data['action'][i],
                     'discount': 1.0,
-                    'reward': or_nan(data['reward'], i),
+                    'reward': data['reward'][i],
                     'is_first': i == 0,
                     'is_last': i == (len(data) - 1),
                     'is_terminal': i == (len(data) - 1),
@@ -196,8 +182,7 @@ class UCSDPickAndPlace(tfds.core.GeneratorBasedBuilder):
                 'steps': episode,
                 'episode_metadata': {
                     'file_path': episode_path,
-                    'n_transitions': ep_len-1,
-                    'n_observations': ep_len,
+                    'n_transitions': ep_len,
                     'success': bool(data['success']),
                     'success_labeled_by': data['labeled'],
                     'disclaimer': data['disclaimer'],
